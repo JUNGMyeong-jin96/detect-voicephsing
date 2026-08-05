@@ -14,7 +14,9 @@ class SessionStore:
         self.pool: asyncpg.Pool | None = None
 
     async def init_pool(self, dsn: str) -> None:
-        self.pool = await asyncpg.create_pool(dsn=dsn, min_size=1, max_size=10)
+        self.pool = await asyncpg.create_pool(
+            dsn=dsn, min_size=1, max_size=10, statement_cache_size=0
+        )
 
     async def close_pool(self) -> None:
         if self.pool:
