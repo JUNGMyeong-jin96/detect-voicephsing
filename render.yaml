@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: voice-phishing-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PERSONA_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: EVALUATOR_MODEL
+        value: claude-sonnet-5
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://detect-voicephsing.vercel.app/
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: "10"
+      - key: RATE_LIMIT_WINDOW_SECONDS
+        value: "60"

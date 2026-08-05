@@ -1,14 +1,17 @@
 import json
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app import llm_client
 from app.chapter_data import CHAPTER_ORDER, CHAPTERS, OPENING_LINES, TIPS_MAP
 from app.models import ChapterMeta, ChapterProgress, ChapterStatus, Message, MessageRole
+from app.rate_limiter import check_message_rate_limit
 from app.store import store
+
+MAX_MESSAGE_LENGTH = 350  # frontend/src/components/ChatScreen.tsx의 MAX_MESSAGE_LENGTH와 동기화
 
 router = APIRouter(prefix="/api/chapters", tags=["chapters"])
 
@@ -19,11 +22,11 @@ class SessionRef(BaseModel):
 
 class MessageIn(BaseModel):
     session_id: str
-    message: str
+    message: str = Field(min_length=1, max_length=MAX_MESSAGE_LENGTH)
 
 
-def _get_session(session_id: str):
-    session = store.get_session(session_id)
+async def _get_session(session_id: str):
+    session = await store.get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="session not found or expired")
     return session
@@ -46,8 +49,8 @@ def list_chapters():
 
 
 @router.post("/{chapter_id}/start")
-def start_chapter(chapter_id: str, body: SessionRef):
-    session = _get_session(body.session_id)
+async def start_chapter(chapter_id: str, body: SessionRef):
+    session = await _get_session(body.session_id)
     meta = _chapter_meta(chapter_id)
 
     idx = CHAPTER_ORDER.index(chapter_id)
@@ -56,8 +59,8 @@ def start_chapter(chapter_id: str, body: SessionRef):
         if prev_progress.status != ChapterStatus.SUCCESS:
             raise HTTPException(status_code=409, detail="previous chapter not completed")
 
-    store.clear_history(session.session_id, chapter_id)
-    store.set_progress(
+    await store.clear_history(session.session_id, chapter_id)
+    await store.set_progress(
         session,
         ChapterProgress(chapter_id=chapter_id, status=ChapterStatus.IN_PROGRESS, attempts_used=0),
     )
@@ -71,15 +74,15 @@ def start_chapter(chapter_id: str, body: SessionRef):
 
 
 @router.post("/{chapter_id}/retry")
-def retry_chapter(chapter_id: str, body: SessionRef):
-    session = _get_session(body.session_id)
+async def retry_chapter(chapter_id: str, body: SessionRef):
+    session = await _get_session(body.session_id)
     meta = _chapter_meta(chapter_id)
     progress = store.get_progress(session, chapter_id)
 
     if progress.status == ChapterStatus.FAILED_FINAL:
         raise HTTPException(status_code=409, detail="no attempts left")
 
-    store.clear_history(session.session_id, chapter_id)
+    await store.clear_history(session.session_id, chapter_id)
 
     return {
         "chapter_id": chapter_id,
@@ -88,19 +91,21 @@ def retry_chapter(chapter_id: str, body: SessionRef):
     }
 
 
-@router.post("/{chapter_id}/message")
+@router.post("/{chapter_id}/message", dependencies=[Depends(check_message_rate_limit)])
 async def send_message(chapter_id: str, body: MessageIn):
-    session = _get_session(body.session_id)
+    session = await _get_session(body.session_id)
     meta = _chapter_meta(chapter_id)
     progress = store.get_progress(session, chapter_id)
 
     if progress.status != ChapterStatus.IN_PROGRESS:
         raise HTTPException(status_code=409, detail="chapter not in progress")
 
-    history = store.get_history(session.session_id, chapter_id)
-    history.append(
-        Message(role=MessageRole.PLAYER, content=body.message, timestamp=datetime.now(timezone.utc))
+    history = await store.get_history(session.session_id, chapter_id)
+    player_message = Message(
+        role=MessageRole.PLAYER, content=body.message, timestamp=datetime.now(timezone.utc)
     )
+    history.append(player_message)
+    await store.append_message(session.session_id, chapter_id, player_message)
 
     async def event_stream():
         full_text = ""
@@ -112,9 +117,11 @@ async def send_message(chapter_id: str, body: MessageIn):
             yield _sse("error", {"code": "persona_llm_error", "message": str(exc)})
             return
 
-        history.append(
-            Message(role=MessageRole.PERSONA, content=full_text, timestamp=datetime.now(timezone.utc))
+        persona_message = Message(
+            role=MessageRole.PERSONA, content=full_text, timestamp=datetime.now(timezone.utc)
         )
+        history.append(persona_message)
+        await store.append_message(session.session_id, chapter_id, persona_message)
         yield _sse("persona_done", {"content": full_text})
 
         try:
@@ -123,7 +130,7 @@ async def send_message(chapter_id: str, body: MessageIn):
             yield _sse("error", {"code": "evaluator_llm_error", "message": str(exc)})
             return
 
-        store.append_evaluation(session.session_id, chapter_id, result)
+        await store.append_evaluation(session.session_id, chapter_id, result)
         yield _sse("evaluation", result.model_dump())
 
         if result.success:
@@ -133,7 +140,7 @@ async def send_message(chapter_id: str, body: MessageIn):
             if progress.attempts_used >= meta.max_attempts:
                 progress.status = ChapterStatus.FAILED_FINAL
                 progress.trust_penalty = True
-        store.set_progress(session, progress)
+        await store.set_progress(session, progress)
 
         attempts_left = max(meta.max_attempts - progress.attempts_used, 0)
         yield _sse("chapter_result", {"status": progress.status.value, "attempts_left": attempts_left})
@@ -143,8 +150,8 @@ async def send_message(chapter_id: str, body: MessageIn):
 
 
 @router.get("/{chapter_id}/report")
-def get_report(chapter_id: str, session_id: str = Query(...)):
-    session = _get_session(session_id)
+async def get_report(chapter_id: str, session_id: str = Query(...)):
+    session = await _get_session(session_id)
     _chapter_meta(chapter_id)
     progress = store.get_progress(session, chapter_id)
 
@@ -152,7 +159,7 @@ def get_report(chapter_id: str, session_id: str = Query(...)):
         raise HTTPException(status_code=409, detail="chapter not finished yet")
 
     patterns: list[str] = []
-    for ev in store.get_evaluations(session.session_id, chapter_id):
+    for ev in await store.get_evaluations(session.session_id, chapter_id):
         for pattern in ev.matched_patterns:
             if pattern not in patterns:
                 patterns.append(pattern)

@@ -4,6 +4,8 @@ import { streamMessage } from '../api/sse'
 import type { ChapterMeta, ChapterStatus, ChatMessage, EvaluationResult } from '../api/types'
 import { ChatBubble } from './ChatBubble'
 
+const MAX_MESSAGE_LENGTH = 350 // backend/app/routers/chapters.py의 MAX_MESSAGE_LENGTH와 동기화
+
 interface ChatScreenProps {
   chapterId: string
   sessionId: string
@@ -140,32 +142,38 @@ export function ChatScreen({
           </button>
         </div>
       ) : (
-        <div className="mt-3 flex gap-2">
-          <input
-            className="flex-1 rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 focus:outline-none"
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') handleSend()
-            }}
-            placeholder="어떻게 대응할지 입력하세요..."
-            disabled={isStreaming}
-          />
-          <button
-            onClick={handleRestartConversation}
-            disabled={isStreaming}
-            className="rounded-md border border-slate-600 px-3 py-2 text-sm text-slate-300 disabled:opacity-50"
-            title="대화를 처음부터 다시 시작합니다 (이미 사용한 시도 횟수는 유지됩니다)"
-          >
-            초기화
-          </button>
-          <button
-            onClick={handleSend}
-            disabled={isStreaming || !input.trim()}
-            className="rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white disabled:bg-slate-600"
-          >
-            전송
-          </button>
+        <div className="mt-3">
+          <div className="flex gap-2">
+            <input
+              className="flex-1 rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 focus:outline-none"
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') handleSend()
+              }}
+              placeholder="어떻게 대응할지 입력하세요..."
+              disabled={isStreaming}
+              maxLength={MAX_MESSAGE_LENGTH}
+            />
+            <button
+              onClick={handleRestartConversation}
+              disabled={isStreaming}
+              className="rounded-md border border-slate-600 px-3 py-2 text-sm text-slate-300 disabled:opacity-50"
+              title="대화를 처음부터 다시 시작합니다 (이미 사용한 시도 횟수는 유지됩니다)"
+            >
+              초기화
+            </button>
+            <button
+              onClick={handleSend}
+              disabled={isStreaming || !input.trim()}
+              className="rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white disabled:bg-slate-600"
+            >
+              전송
+            </button>
+          </div>
+          <p className="mt-1 text-right text-xs text-slate-500">
+            {input.length}/{MAX_MESSAGE_LENGTH}
+          </p>
         </div>
       )}
     </div>

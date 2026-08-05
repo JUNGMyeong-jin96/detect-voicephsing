@@ -6,8 +6,8 @@ router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 
 
 @router.post("", status_code=201)
-def create_session():
-    session = store.create_session()
+async def create_session():
+    session = await store.create_session()
     return {
         "session_id": session.session_id,
         "expires_at": session.expires_at,
@@ -16,8 +16,8 @@ def create_session():
 
 
 @router.get("/{session_id}")
-def get_session(session_id: str):
-    session = store.get_session(session_id)
+async def get_session(session_id: str):
+    session = await store.get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="session not found or expired")
     return {
@@ -28,6 +28,6 @@ def get_session(session_id: str):
 
 
 @router.delete("/{session_id}", status_code=204)
-def delete_session(session_id: str):
-    store.delete_session(session_id)
+async def delete_session(session_id: str):
+    await store.delete_session(session_id)
     return None
