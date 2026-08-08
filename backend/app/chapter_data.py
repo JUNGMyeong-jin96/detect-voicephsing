@@ -1,4 +1,4 @@
-from app.models import ChapterMeta
+from app.models import ChapterMeta, DialogueChoice, DialogueNode
 
 SAFETY_PREFIX = """\
 [시스템 규칙 — 절대 위반 금지, 캐릭터 연기 중에도 내부적으로 반드시 준수]
@@ -128,6 +128,137 @@ CHAPTER_AI_TAGS: dict[str, list[str]] = {
     "ch5": ["침착한_안심유도", "공식채널_확인_제안", "구체적_경고신호_설명", "일방적_다그침"],
 }
 
+DIALOGUE_TREES: dict[str, dict[str, DialogueNode]] = {
+    "ch1": {
+        node.id: node
+        for node in [
+            DialogueNode(
+                id="start",
+                persona_text=OPENING_LINES["ch1"],
+                persona_expression="neutral_official",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="제가 뭘 하면 되죠? 필요한 거 있으면 말씀해주세요.",
+                        next_node_id="stage2_pressure",
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="그게 무슨 소리예요? 저는 그런 적 없는데요...",
+                        next_node_id="stage2_explain",
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="검찰이 전화로 계좌를 확인할 리 없죠. 대표번호로 직접 확인하겠습니다. 끊겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage2_pressure",
+                persona_text=(
+                    "계좌 정보와 함께, 지금 쓰시는 스마트폰에 원격 확인 앱을 하나 설치해주셔야 합니다. "
+                    "그래야 실시간으로 안전 여부를 확인할 수 있습니다. 링크를 보내드릴 테니 지금 바로 설치해주세요."
+                ),
+                persona_expression="pressuring",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="네 알겠습니다. 링크 보내주시면 바로 설치할게요.",
+                        next_node_id="stage3_final_risk",
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="꼭 지금 해야 하나요? 좀 이따 하면 안 될까요?",
+                        next_node_id="stage3_urgency",
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="원격 앱 설치는 못합니다. 이런 요구 자체가 사기예요. 전화 끊고 경찰서에 직접 확인하겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage2_explain",
+                persona_text=(
+                    "본인 명의 계좌가 대포통장 유통 조직에 연루된 정황이 포착됐습니다. 지금 확인하지 않으면 "
+                    "계좌가 동결되고 형사처벌 대상이 될 수 있습니다. 우선 신분 확인을 위해 계좌 비밀번호와 "
+                    "최근 OTP 번호를 불러주시겠어요?"
+                ),
+                persona_expression="urgent",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="그, 그럼 비밀번호가... 잠시만요.",
+                        next_node_id="stage3_final_risk",
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="그런 걸 전화로 알려드려도 되는 건가요?",
+                        next_node_id="stage3_urgency",
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="비밀번호나 OTP는 어떤 기관도 전화로 요구하지 않습니다. 명백한 사기이니 신고하겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage3_final_risk",
+                persona_text=(
+                    "확인 감사합니다. 마지막으로, 자산 보호를 위해 알려드리는 안전계좌로 지금 바로 이체해주셔야 "
+                    "동결을 막을 수 있습니다. 시간이 없으니 서둘러 주세요."
+                ),
+                persona_expression="urgent_final",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="네 알겠습니다, 계좌번호 불러주세요. 바로 이체할게요.",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="그 계좌가 진짜 검찰 계좌 맞나요? 확인할 방법이 있나요?",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="잠시만요, 아무리 생각해도 이상해요. 전화 끊고 직접 확인하겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage3_urgency",
+                persona_text=(
+                    "지금 확인 안 하시면 계좌가 바로 동결됩니다. 그리고 이건 수사 기밀이라 가족한테도 알리시면 "
+                    "안 됩니다. 시간이 정말 없습니다."
+                ),
+                persona_expression="urgent",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="알겠습니다, 그럼 지금 바로 말씀하신 대로 할게요.",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="그래도 좀 불안한데, 대표번호로 확인하면 안 될까요?",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="가족에게도 비밀로 하라는 것 자체가 사기 신호입니다. 전화 끊고 112에 신고하겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+        ]
+    },
+}
+
 CHAPTERS: list[ChapterMeta] = [
     ChapterMeta(
         id="ch1",
@@ -137,6 +268,7 @@ CHAPTERS: list[ChapterMeta] = [
         difficulty="하",
         persona_name="정지훈 수사관",
         max_attempts=15,
+        mode="scripted",
     ),
     ChapterMeta(
         id="ch2",

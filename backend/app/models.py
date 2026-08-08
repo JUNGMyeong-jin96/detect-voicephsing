@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -24,6 +25,20 @@ class ChapterMeta(BaseModel):
     difficulty: str
     persona_name: str
     max_attempts: int
+    mode: Literal["freeform", "scripted"] = "freeform"
+
+
+class DialogueChoice(BaseModel):
+    id: str
+    text: str
+    next_node_id: str | None = None
+
+
+class DialogueNode(BaseModel):
+    id: str
+    persona_text: str
+    persona_expression: str
+    choices: list[DialogueChoice]
 
 
 class ChapterProgress(BaseModel):

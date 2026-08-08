@@ -6,8 +6,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from app import llm_client
-from app.chapter_data import CHAPTER_ORDER, CHAPTERS, OPENING_LINES, TIPS_MAP
-from app.models import ChapterMeta, ChapterProgress, ChapterStatus, Message, MessageRole
+from app.chapter_data import CHAPTER_ORDER, CHAPTERS, DIALOGUE_TREES, OPENING_LINES, TIPS_MAP
+from app.models import ChapterMeta, ChapterProgress, ChapterStatus, DialogueNode, Message, MessageRole
 from app.rate_limiter import check_message_rate_limit
 from app.store import store
 
@@ -23,6 +23,12 @@ class SessionRef(BaseModel):
 class MessageIn(BaseModel):
     session_id: str
     message: str = Field(min_length=1, max_length=MAX_MESSAGE_LENGTH)
+
+
+class ChoiceIn(BaseModel):
+    session_id: str
+    node_id: str
+    choice_id: str
 
 
 async def _get_session(session_id: str):
@@ -41,6 +47,15 @@ def _chapter_meta(chapter_id: str) -> ChapterMeta:
 
 def _sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+def _dialogue_node_payload(node: DialogueNode) -> dict:
+    return {
+        "id": node.id,
+        "persona_text": node.persona_text,
+        "persona_expression": node.persona_expression,
+        "choices": [{"id": c.id, "text": c.text} for c in node.choices],
+    }
 
 
 @router.get("")
@@ -66,11 +81,14 @@ async def start_chapter(chapter_id: str, body: SessionRef):
     )
     session.current_chapter_id = chapter_id
 
-    return {
+    response = {
         "chapter_id": chapter_id,
         "attempts_left": meta.max_attempts,
         "opening_line": OPENING_LINES[chapter_id],
     }
+    if meta.mode == "scripted":
+        response["dialogue_node"] = _dialogue_node_payload(DIALOGUE_TREES[chapter_id]["start"])
+    return response
 
 
 @router.post("/{chapter_id}/retry")
@@ -84,11 +102,14 @@ async def retry_chapter(chapter_id: str, body: SessionRef):
 
     await store.clear_history(session.session_id, chapter_id)
 
-    return {
+    response = {
         "chapter_id": chapter_id,
         "attempts_left": meta.max_attempts - progress.attempts_used,
         "opening_line": OPENING_LINES[chapter_id],
     }
+    if meta.mode == "scripted":
+        response["dialogue_node"] = _dialogue_node_payload(DIALOGUE_TREES[chapter_id]["start"])
+    return response
 
 
 @router.post("/{chapter_id}/message", dependencies=[Depends(check_message_rate_limit)])
@@ -147,6 +168,67 @@ async def send_message(chapter_id: str, body: MessageIn):
         yield _sse("done", {})
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+@router.post("/{chapter_id}/choice", dependencies=[Depends(check_message_rate_limit)])
+async def send_choice(chapter_id: str, body: ChoiceIn):
+    session = await _get_session(body.session_id)
+    meta = _chapter_meta(chapter_id)
+    progress = store.get_progress(session, chapter_id)
+
+    if progress.status != ChapterStatus.IN_PROGRESS:
+        raise HTTPException(status_code=409, detail="chapter not in progress")
+
+    tree = DIALOGUE_TREES.get(chapter_id)
+    if tree is None:
+        raise HTTPException(status_code=409, detail="chapter has no dialogue tree")
+
+    node = tree.get(body.node_id)
+    if node is None:
+        raise HTTPException(status_code=404, detail="unknown dialogue node")
+
+    choice = next((c for c in node.choices if c.id == body.choice_id), None)
+    if choice is None:
+        raise HTTPException(status_code=404, detail="unknown choice")
+
+    history = await store.get_history(session.session_id, chapter_id)
+    player_message = Message(
+        role=MessageRole.PLAYER, content=choice.text, timestamp=datetime.now(timezone.utc)
+    )
+    history.append(player_message)
+    await store.append_message(session.session_id, chapter_id, player_message)
+
+    next_node = tree[choice.next_node_id] if choice.next_node_id else None
+    if next_node is not None:
+        persona_message = Message(
+            role=MessageRole.PERSONA, content=next_node.persona_text, timestamp=datetime.now(timezone.utc)
+        )
+        history.append(persona_message)
+        await store.append_message(session.session_id, chapter_id, persona_message)
+
+    try:
+        result = await llm_client.evaluate(chapter_id, history)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"evaluator_llm_error: {exc}")
+
+    await store.append_evaluation(session.session_id, chapter_id, result)
+
+    if result.success:
+        progress.status = ChapterStatus.SUCCESS
+    else:
+        progress.attempts_used += 1
+        if progress.attempts_used >= meta.max_attempts:
+            progress.status = ChapterStatus.FAILED_FINAL
+            progress.trust_penalty = True
+    await store.set_progress(session, progress)
+
+    attempts_left = max(meta.max_attempts - progress.attempts_used, 0)
+
+    return {
+        "dialogue_node": _dialogue_node_payload(next_node) if next_node else None,
+        "evaluation": result.model_dump(),
+        "chapter_result": {"status": progress.status.value, "attempts_left": attempts_left},
+    }
 
 
 @router.get("/{chapter_id}/report")

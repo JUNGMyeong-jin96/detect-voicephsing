@@ -1,4 +1,4 @@
-import type { ChapterMeta, ChapterReport, SessionInfo, StartChapterResponse } from './types'
+import type { ChapterMeta, ChapterReport, ChoiceResponse, SessionInfo, StartChapterResponse } from './types'
 
 export const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
 
@@ -44,6 +44,19 @@ export function retryChapter(chapterId: string, sessionId: string): Promise<Star
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ session_id: sessionId }),
   }).then(asJson<StartChapterResponse>)
+}
+
+export function sendChoice(
+  chapterId: string,
+  sessionId: string,
+  nodeId: string,
+  choiceId: string,
+): Promise<ChoiceResponse> {
+  return fetch(`${API_BASE}/api/chapters/${chapterId}/choice`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: sessionId, node_id: nodeId, choice_id: choiceId }),
+  }).then(asJson<ChoiceResponse>)
 }
 
 export function getReport(chapterId: string, sessionId: string): Promise<ChapterReport> {
