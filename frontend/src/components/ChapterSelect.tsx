@@ -87,7 +87,7 @@ export function ChapterSelect({
                 <button
                   disabled={!unlocked || pendingId === chapter.id}
                   onClick={() => handleStart(chapter.id)}
-                  className="rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-slate-600"
+                  className="rounded-md bg-indigo-500 px-3 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-slate-600"
                 >
                   {!unlocked ? '잠김' : status ? '다시 시작' : '시작'}
                 </button>

@@ -37,7 +37,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-dvh bg-slate-950 text-slate-100">
       {sessionError && <p className="p-4 text-sm text-red-400">세션 생성 실패: {sessionError}</p>}
       {loadError && <p className="p-4 text-sm text-red-400">챕터 목록을 불러오지 못했습니다: {loadError}</p>}
 

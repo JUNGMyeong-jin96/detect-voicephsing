@@ -98,7 +98,7 @@ export function ChatScreen({
   }
 
   return (
-    <div className="mx-auto flex h-screen max-w-2xl flex-col px-4 py-6">
+    <div className="mx-auto flex h-dvh max-w-2xl flex-col px-4 py-6">
       <header className="mb-4">
         <p className="text-xs tracking-wide text-slate-400 uppercase">
           Ch{chapterMeta.order}. {chapterMeta.title} · {chapterMeta.fraud_type}
@@ -109,12 +109,14 @@ export function ChatScreen({
       </header>
 
       <div className="flex-1 overflow-y-auto rounded-lg border border-slate-700 bg-slate-900 p-4">
-        {messages.map((message, index) => (
-          <ChatBubble key={index} message={message} />
-        ))}
-        {isStreaming && streamingText && <ChatBubble message={{ role: 'persona', content: streamingText }} />}
-        {isStreaming && !streamingText && <p className="text-sm text-slate-500">입력 중...</p>}
-        <div ref={bottomRef} />
+        <div className="flex min-h-full flex-col justify-end">
+          {messages.map((message, index) => (
+            <ChatBubble key={index} message={message} />
+          ))}
+          {isStreaming && streamingText && <ChatBubble message={{ role: 'persona', content: streamingText }} />}
+          {isStreaming && !streamingText && <p className="text-sm text-slate-400">입력 중...</p>}
+          <div ref={bottomRef} />
+        </div>
       </div>
 
       {lastEvaluation && (
@@ -136,7 +138,7 @@ export function ChatScreen({
         <div className="mt-3 flex justify-end">
           <button
             onClick={() => onChapterFinished(finalStatus, attemptsLeft)}
-            className="rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white"
+            className="rounded-md bg-indigo-500 px-4 py-3 text-sm font-medium text-white"
           >
             리포트 보기
           </button>
@@ -145,7 +147,7 @@ export function ChatScreen({
         <div className="mt-3">
           <div className="flex gap-2">
             <input
-              className="flex-1 rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 focus:outline-none"
+              className="min-w-0 flex-1 rounded-md border border-slate-700 bg-slate-800 px-3 py-3 text-sm text-slate-100 focus:outline-none"
               value={input}
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={(event) => {
@@ -158,7 +160,7 @@ export function ChatScreen({
             <button
               onClick={handleRestartConversation}
               disabled={isStreaming}
-              className="rounded-md border border-slate-600 px-3 py-2 text-sm text-slate-300 disabled:opacity-50"
+              className="shrink-0 rounded-md border border-slate-600 px-3 py-3 text-sm text-slate-300 disabled:opacity-50"
               title="대화를 처음부터 다시 시작합니다 (이미 사용한 시도 횟수는 유지됩니다)"
             >
               초기화
@@ -166,12 +168,12 @@ export function ChatScreen({
             <button
               onClick={handleSend}
               disabled={isStreaming || !input.trim()}
-              className="rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white disabled:bg-slate-600"
+              className="shrink-0 rounded-md bg-indigo-500 px-4 py-3 text-sm font-medium text-white disabled:bg-slate-600"
             >
               전송
             </button>
           </div>
-          <p className="mt-1 text-right text-xs text-slate-500">
+          <p className="mt-1 text-right text-xs text-slate-400">
             {input.length}/{MAX_MESSAGE_LENGTH}
           </p>
         </div>

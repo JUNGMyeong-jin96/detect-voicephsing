@@ -103,7 +103,7 @@ export function ReportScreen({
       <div className="mt-8 flex justify-end gap-2">
         <button
           onClick={onBackToChapters}
-          className="rounded-md border border-slate-600 px-4 py-2 text-sm text-slate-200"
+          className="rounded-md border border-slate-600 px-4 py-3 text-sm text-slate-200"
         >
           챕터 목록
         </button>
@@ -111,7 +111,7 @@ export function ReportScreen({
           <button
             onClick={handleNext}
             disabled={movingNext}
-            className="rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white disabled:bg-slate-600"
+            className="rounded-md bg-indigo-500 px-4 py-3 text-sm font-medium text-white disabled:bg-slate-600"
           >
             다음 챕터로
           </button>
