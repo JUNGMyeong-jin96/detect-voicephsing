@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react'
 import { getReport, isSessionExpiredMessage, startChapter } from '../api/client'
-import type { ChapterMeta, ChapterReport } from '../api/types'
+import type { ChapterMeta, ChapterReport, DialogueNode } from '../api/types'
 
 interface ReportScreenProps {
   chapterId: string
   sessionId: string
   chapters: ChapterMeta[]
   onBackToChapters: () => void
-  onNextChapter: (chapterId: string, openingLine: string, attemptsLeft: number) => void
+  onNextChapter: (
+    chapterId: string,
+    openingLine: string,
+    attemptsLeft: number,
+    dialogueNode?: DialogueNode,
+  ) => void
   onSessionExpired: () => void
 }
 
@@ -47,7 +52,7 @@ export function ReportScreen({
     setErrorMessage(null)
     try {
       const res = await startChapter(nextChapter.id, sessionId)
-      onNextChapter(nextChapter.id, res.opening_line, res.attempts_left)
+      onNextChapter(nextChapter.id, res.opening_line, res.attempts_left, res.dialogue_node)
     } catch (err) {
       const message = String(err)
       if (isSessionExpiredMessage(message)) {

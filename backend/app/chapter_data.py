@@ -257,6 +257,494 @@ DIALOGUE_TREES: dict[str, dict[str, DialogueNode]] = {
             ),
         ]
     },
+    "ch2": {
+        node.id: node
+        for node in [
+            DialogueNode(
+                id="start",
+                persona_text=OPENING_LINES["ch2"],
+                persona_expression="friendly_pitch",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="우와 정말요? 저도 가입할래요! 어떻게 하면 되나요?",
+                        next_node_id="stage2_pressure",
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="그런데 이게 진짜 수익이 나는 거 맞아요? 좀 의심되는데...",
+                        next_node_id="stage2_explain",
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="정식 등록된 투자자문업체 아니면 안 믿어요. 등록번호부터 확인하고 말씀드릴게요.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage2_pressure",
+                persona_text=(
+                    "잘 생각하셨어요! 지금 신청하신 분들만 벌써 100명 넘었어요. 최초 투자금 30만원만 "
+                    "입금해주시면 바로 리딩방 VIP방에 초대해드릴게요. 오늘 자정까지만 이 조건이에요!"
+                ),
+                persona_expression="pressuring",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="네 알겠습니다, 계좌번호 알려주시면 바로 입금할게요.",
+                        next_node_id="stage3_final_risk",
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="지금 당장 입금해야 하나요? 내일 하면 안 되나요?",
+                        next_node_id="stage3_urgency",
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="검증 안 된 곳에 입금은 못 해요. 금융당국에 등록된 업체인지 먼저 확인하겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage2_explain",
+                persona_text=(
+                    "에이, 의심하실 수 있죠! 근데 저희는 자체 인증 시스템이 있어서 완전 안전해요. 실제로 "
+                    "수익 인증샷도 보내드릴 수 있어요. 이런 기회 흔치 않으니까 오늘 안에 결정하시는 게 좋아요."
+                ),
+                persona_expression="reassuring_urgent",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="그렇다면 믿고 한번 해볼게요. 어떻게 시작하면 되나요?",
+                        next_node_id="stage3_final_risk",
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="인증샷이 진짜인지는 잘 모르겠는데... 조금 더 생각해볼게요.",
+                        next_node_id="stage3_urgency",
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="자체 인증은 공신력이 없어요. 금융감독원에 등록된 정식 업체인지부터 확인하겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage3_final_risk",
+                persona_text=(
+                    "좋아요! 그럼 아래 계좌로 30만원 입금해주시고, 입금하시면 바로 VIP 리딩방 링크 "
+                    "보내드릴게요. 오늘 가입하신 분들껀 수익률도 2배로 챙겨드려요!"
+                ),
+                persona_expression="pressuring",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="네, 지금 바로 입금할게요. 계좌번호 주세요.",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="그 계좌가 진짜 회사 명의 계좌 맞나요? 확인 가능한가요?",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="잠깐만요, 아무리 생각해도 이상해요. 입금 안 하고 등록 여부부터 확인하겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage3_urgency",
+                persona_text=(
+                    "지금 안 하시면 이 조건 다시 안 나와요! 벌써 마감 임박이라 딱 3자리 남았어요. 다른 분한테 "
+                    "자리 넘어가기 전에 빨리 결정하셔야 해요!"
+                ),
+                persona_expression="reassuring_urgent",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="알겠습니다, 그럼 지금 바로 입금할게요.",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="그래도 좀 불안한데, 등록 여부 확인하고 나서 하면 안 될까요?",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="마감 임박이라는 말에 흔들리지 않을게요. 입금하지 않겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+        ]
+    },
+    "ch3": {
+        node.id: node
+        for node in [
+            DialogueNode(
+                id="start",
+                persona_text=OPENING_LINES["ch3"],
+                persona_expression="neutral_official",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="네, 저금리로 갈아탈 수 있으면 좋죠. 어떻게 하면 되나요?",
+                        next_node_id="stage2_pressure",
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="저금리 대환대출이요? 제가 신청한 적이 있었나요?",
+                        next_node_id="stage2_explain",
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="저금리 대환대출이라도 필요한 서류는 은행에 직접 방문해서 확인할게요. 전화로는 진행 안 합니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage2_pressure",
+                persona_text=(
+                    "네 맞습니다, 신용등급을 사전 조정해드리면 훨씬 낮은 금리로 심사가 가능해요. 그러려면 "
+                    "신용등급 조정 수수료 명목으로 20만원 정도 먼저 입금해주셔야 심사가 진행됩니다."
+                ),
+                persona_expression="official_pressure",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="네 알겠습니다, 계좌번호 알려주시면 바로 입금할게요.",
+                        next_node_id="stage3_final_risk",
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="꼭 미리 내야 하나요? 대출 실행 후에 내면 안 되나요?",
+                        next_node_id="stage3_urgency",
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="대출 심사 전에 돈을 먼저 받는 건 정상적인 절차가 아니에요. 입금 안 하겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage2_explain",
+                persona_text=(
+                    "고객님 명의로 접수된 신청 건이 저희 쪽에 연동되어 있어서 안내드리는 거예요. 신용등급을 "
+                    "사전 조정해드리면 더 낮은 금리로 진행할 수 있는데, 그러려면 조정 수수료가 먼저 필요합니다."
+                ),
+                persona_expression="official_pressure",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="아, 그런 거였군요. 그럼 수수료 보내드리면 되나요?",
+                        next_node_id="stage3_final_risk",
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="제가 신청한 기억이 없는데... 정말 저 맞나요?",
+                        next_node_id="stage3_urgency",
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="신청한 적 없는 대출을 안내한다는 것 자체가 이상하네요. 진행 안 하겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage3_final_risk",
+                persona_text=(
+                    "그럼 지금 바로 수수료 20만원만 입금해주시면 오늘 안에 대출 실행까지 도와드릴게요. "
+                    "계좌번호 불러드릴까요?"
+                ),
+                persona_expression="urgent_final",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="네, 불러주세요. 바로 입금할게요.",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="대출 실행 후에 수수료를 떼면 안 되는 이유가 뭔가요?",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="선입금 요구하는 대출은 사기입니다. 입금하지 않겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage3_urgency",
+                persona_text=(
+                    "지금 안 하시면 오늘 배정된 저금리 한도가 마감돼서 다음 달에 다시 신청하셔야 해요. "
+                    "시간이 얼마 없습니다."
+                ),
+                persona_expression="official_pressure",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="알겠습니다, 그럼 지금 바로 입금할게요.",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="그래도 먼저 대출 실행하고 수수료 떼는 방식으로 하면 안 될까요?",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="한도 마감이라는 말에 흔들리지 않을게요. 선입금은 하지 않겠습니다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+        ]
+    },
+    "ch4": {
+        node.id: node
+        for node in [
+            DialogueNode(
+                id="start",
+                persona_text=OPENING_LINES["ch4"],
+                persona_expression="urgent",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="무슨 일이야? 얼마나 필요한데? 엄마가 바로 보내줄게.",
+                        next_node_id="stage2_pressure",
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="무슨 일인데 그래? 일단 자세히 말해봐.",
+                        next_node_id="stage2_explain",
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="목소리부터 다시 들어야 믿을 수 있어. 지금 바로 전화 걸게.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage2_pressure",
+                persona_text=(
+                    "엄마 나 사고를 냈어... 합의금이 급해서 그래ㅠㅠ 지금 200만원만 먼저 보내줄 수 있어? "
+                    "진짜 급해."
+                ),
+                persona_expression="urgent",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="알았어, 지금 바로 계좌번호 보내.",
+                        next_node_id="stage3_final_risk",
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="일단 진정하고, 계좌번호부터 불러줘 볼래?",
+                        next_node_id="stage3_urgency",
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="그래도 먼저 전화로 목소리 확인부터 할게. 지금 통화 가능해?",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage2_explain",
+                persona_text=(
+                    "자세히 말할 시간이 없어ㅠㅠ 지금 폰도 이상해서 빨리 끊어야 해. 그냥 나 좀 도와줘, "
+                    "합의금이 급해."
+                ),
+                persona_expression="urgent",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="알았어, 얼마면 되는데? 바로 보내줄게.",
+                        next_node_id="stage3_final_risk",
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="그래도 무슨 일인지는 알아야 보내주지. 조금만 더 말해봐.",
+                        next_node_id="stage3_urgency",
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="그래도 이상해. 지금 바로 전화해볼게.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage3_final_risk",
+                persona_text=(
+                    "엄마 시간 없어! 지금 바로 이 계좌로 보내줘, 안 그러면 나 진짜 큰일 나ㅠㅠ 경찰 부르면 "
+                    "더 복잡해져!"
+                ),
+                persona_expression="urgent_final",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="알았어, 지금 바로 보낼게.",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="그래도 잠깐 통화로 목소리만 들려주면 안 돼?",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="목소리 확인 전에는 못 보내. 지금 바로 전화할게.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage3_urgency",
+                persona_text="폰 뺏겨서 통화 못해ㅠㅠ 지금 문자로만 얘기해야 돼, 빨리 좀 보내줘 제발.",
+                persona_expression="urgent",
+                choices=[
+                    DialogueChoice(
+                        id="comply",
+                        text="알았어, 어쩔 수 없지. 바로 보낼게.",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="hesitate",
+                        text="그래도 불안한데, 조금만 이따가 보내면 안 될까?",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="refuse",
+                        text="통화로 확인되기 전에는 절대 못 보내. 경찰에도 확인해볼게.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+        ]
+    },
+    "ch5": {
+        node.id: node
+        for node in [
+            DialogueNode(
+                id="start",
+                persona_text=OPENING_LINES["ch5"],
+                persona_expression="panicked",
+                choices=[
+                    DialogueChoice(
+                        id="calm_specific",
+                        text="엄마, 검찰이나 경찰은 절대 전화로 계좌이체나 안전계좌를 요구하지 않아요. 일단 전화 끊고 제가 직접 대표번호로 확인해볼게요.",
+                        next_node_id="stage2_calming",
+                    ),
+                    DialogueChoice(
+                        id="dismiss",
+                        text="엄마, 그거 완전 사기야! 왜 그런 걸 믿어!",
+                        next_node_id="stage2_resist",
+                    ),
+                    DialogueChoice(
+                        id="enable",
+                        text="알았어 엄마, 지금 바로 은행 가, 내가 데려다 줄게.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage2_calming",
+                persona_text="그래도... 진짜 검찰이라고 했는데... 정말 사기 맞아? 나 어떡하지...",
+                persona_expression="worried",
+                choices=[
+                    DialogueChoice(
+                        id="calm_specific",
+                        text="네, 확실해요. 검찰은 사건 관련해서 절대 전화로 돈을 요구하지 않아요. 제가 지금 검찰청 대표번호로 바로 확인 전화해볼게요. 그동안 이 번호로 다시 전화 오면 받지 마세요.",
+                        next_node_id="stage3_relief",
+                    ),
+                    DialogueChoice(
+                        id="dismiss",
+                        text="아니 그니까 사기라고! 그만 좀 믿어!",
+                        next_node_id="stage3_resist_final",
+                    ),
+                    DialogueChoice(
+                        id="enable",
+                        text="그럼... 혹시 모르니까 일단 조금만 보내놓을까?",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage2_resist",
+                persona_text="너는 몰라! 나 지금 큰일 난다니까! 확인이고 뭐고 시간 없어, 나 먼저 은행 갔다 올게!",
+                persona_expression="panicked",
+                choices=[
+                    DialogueChoice(
+                        id="calm_specific",
+                        text="엄마 잠깐만요, 흥분하지 마시고 제 말 들어보세요. 검찰은 전화로 계좌 이체를 절대 요구하지 않아요. 제가 지금 바로 확인해볼 테니 10분만 기다려주세요.",
+                        next_node_id="stage3_relief",
+                    ),
+                    DialogueChoice(
+                        id="dismiss",
+                        text="엄마 제발 진정해! 그거 사기라니까!",
+                        next_node_id="stage3_resist_final",
+                    ),
+                    DialogueChoice(
+                        id="enable",
+                        text="알았어, 위험하면 안 되니까 일단 나도 같이 가서 확인해볼게.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage3_relief",
+                persona_text="…그래, 일단 끊어볼게. 확인해줘서 고마워.",
+                persona_expression="relieved",
+                choices=[
+                    DialogueChoice(
+                        id="reassure",
+                        text="네, 제가 확인하는 동안 절대 다시 전화 받지 마세요.",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="offer_police",
+                        text="혹시 불안하시면 저랑 같이 경찰서 가서 확인해볼까요?",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+            DialogueNode(
+                id="stage3_resist_final",
+                persona_text="몰라, 나 그냥 갔다 올게! 너랑 얘기할 시간 없어!",
+                persona_expression="panicked",
+                choices=[
+                    DialogueChoice(
+                        id="calm_specific",
+                        text="엄마, 제발요. 검찰이 전화로 계좌 이체를 요구하는 것 자체가 사기예요. 일단 저랑 같이 대표번호로 확인 전화만 해봐요.",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="dismiss",
+                        text="엄마!! 그냥 내 말 좀 들어!",
+                        next_node_id=None,
+                    ),
+                    DialogueChoice(
+                        id="enable",
+                        text="알았어, 그럼 엄마 마음대로 해, 나도 모르겠다.",
+                        next_node_id=None,
+                    ),
+                ],
+            ),
+        ]
+    },
 }
 
 CHAPTERS: list[ChapterMeta] = [
@@ -278,6 +766,7 @@ CHAPTERS: list[ChapterMeta] = [
         difficulty="중",
         persona_name="제이든 실장",
         max_attempts=15,
+        mode="scripted",
     ),
     ChapterMeta(
         id="ch3",
@@ -287,6 +776,7 @@ CHAPTERS: list[ChapterMeta] = [
         difficulty="중상",
         persona_name="박민준 상담사",
         max_attempts=15,
+        mode="scripted",
     ),
     ChapterMeta(
         id="ch4",
@@ -296,6 +786,7 @@ CHAPTERS: list[ChapterMeta] = [
         difficulty="상",
         persona_name="(자녀 사칭)",
         max_attempts=15,
+        mode="scripted",
     ),
     ChapterMeta(
         id="ch5",
@@ -305,6 +796,7 @@ CHAPTERS: list[ChapterMeta] = [
         difficulty="최상",
         persona_name="어머니 김말순",
         max_attempts=15,
+        mode="scripted",
     ),
 ]
 

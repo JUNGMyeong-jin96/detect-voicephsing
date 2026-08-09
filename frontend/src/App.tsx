@@ -101,8 +101,8 @@ function App() {
           sessionId={sessionId}
           chapters={chapters}
           onBackToChapters={() => setView({ name: 'chapter-select' })}
-          onNextChapter={(chapterId, openingLine, attemptsLeft) =>
-            setView({ name: 'chat', chapterId, openingLine, attemptsLeft })
+          onNextChapter={(chapterId, openingLine, attemptsLeft, dialogueNode) =>
+            setView({ name: 'chat', chapterId, openingLine, attemptsLeft, dialogueNode })
           }
           onSessionExpired={handleSessionExpired}
         />

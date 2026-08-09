@@ -3,6 +3,12 @@ const EXPRESSION_MAP: Record<string, { emoji: string; bg: string }> = {
   pressuring: { emoji: '😠', bg: 'bg-amber-700' },
   urgent: { emoji: '😨', bg: 'bg-orange-700' },
   urgent_final: { emoji: '😰', bg: 'bg-red-700' },
+  friendly_pitch: { emoji: '🤝', bg: 'bg-sky-700' },
+  reassuring_urgent: { emoji: '😅', bg: 'bg-amber-600' },
+  official_pressure: { emoji: '🧑‍💼', bg: 'bg-amber-700' },
+  panicked: { emoji: '😱', bg: 'bg-red-800' },
+  worried: { emoji: '😟', bg: 'bg-orange-600' },
+  relieved: { emoji: '😌', bg: 'bg-emerald-700' },
 }
 
 const DEFAULT_EXPRESSION = { emoji: '🙂', bg: 'bg-slate-700' }
