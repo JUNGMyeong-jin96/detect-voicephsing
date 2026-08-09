@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { listChapters } from './api/client'
-import type { ChapterMeta, ChapterStatus } from './api/types'
+import type { ChapterMeta, ChapterStatus, DialogueNode } from './api/types'
 import { ChapterSelect } from './components/ChapterSelect'
 import { ChatScreen } from './components/ChatScreen'
 import { ReportScreen } from './components/ReportScreen'
+import { ScriptedChatScreen } from './components/ScriptedChatScreen'
 import { useSession } from './hooks/useSession'
 
 type View =
   | { name: 'loading' }
   | { name: 'chapter-select' }
-  | { name: 'chat'; chapterId: string; openingLine: string; attemptsLeft: number }
+  | { name: 'chat'; chapterId: string; openingLine: string; attemptsLeft: number; dialogueNode?: DialogueNode }
   | { name: 'report'; chapterId: string }
 
 type Progress = Record<string, { status: ChapterStatus; attemptsLeft: number }>
@@ -48,8 +49,8 @@ function App() {
           chapters={chapters}
           progress={progress}
           sessionId={sessionId}
-          onEnterChapter={(chapterId, openingLine, attemptsLeft) =>
-            setView({ name: 'chat', chapterId, openingLine, attemptsLeft })
+          onEnterChapter={(chapterId, openingLine, attemptsLeft, dialogueNode) =>
+            setView({ name: 'chat', chapterId, openingLine, attemptsLeft, dialogueNode })
           }
           onSessionExpired={handleSessionExpired}
         />
@@ -60,6 +61,27 @@ function App() {
         (() => {
           const chapterMeta = chapters.find((c) => c.id === view.chapterId)
           if (!chapterMeta) return null
+
+          const onChapterFinished = (status: ChapterStatus, attemptsLeft: number) => {
+            setProgress((prev) => ({ ...prev, [view.chapterId]: { status, attemptsLeft } }))
+            setView({ name: 'report', chapterId: view.chapterId })
+          }
+
+          if (chapterMeta.mode === 'scripted' && view.dialogueNode) {
+            return (
+              <ScriptedChatScreen
+                chapterId={view.chapterId}
+                sessionId={sessionId}
+                chapterMeta={chapterMeta}
+                openingLine={view.openingLine}
+                initialDialogueNode={view.dialogueNode}
+                initialAttemptsLeft={view.attemptsLeft}
+                onChapterFinished={onChapterFinished}
+                onSessionExpired={handleSessionExpired}
+              />
+            )
+          }
+
           return (
             <ChatScreen
               chapterId={view.chapterId}
@@ -67,10 +89,7 @@ function App() {
               chapterMeta={chapterMeta}
               openingLine={view.openingLine}
               initialAttemptsLeft={view.attemptsLeft}
-              onChapterFinished={(status, attemptsLeft) => {
-                setProgress((prev) => ({ ...prev, [view.chapterId]: { status, attemptsLeft } }))
-                setView({ name: 'report', chapterId: view.chapterId })
-              }}
+              onChapterFinished={onChapterFinished}
               onSessionExpired={handleSessionExpired}
             />
           )
@@ -82,8 +101,8 @@ function App() {
           sessionId={sessionId}
           chapters={chapters}
           onBackToChapters={() => setView({ name: 'chapter-select' })}
-          onNextChapter={(chapterId, openingLine, attemptsLeft) =>
-            setView({ name: 'chat', chapterId, openingLine, attemptsLeft })
+          onNextChapter={(chapterId, openingLine, attemptsLeft, dialogueNode) =>
+            setView({ name: 'chat', chapterId, openingLine, attemptsLeft, dialogueNode })
           }
           onSessionExpired={handleSessionExpired}
         />

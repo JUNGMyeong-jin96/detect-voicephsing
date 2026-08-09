@@ -1,12 +1,17 @@
 import { useState } from 'react'
 import { isSessionExpiredMessage, startChapter } from '../api/client'
-import type { ChapterMeta, ChapterStatus } from '../api/types'
+import type { ChapterMeta, ChapterStatus, DialogueNode } from '../api/types'
 
 interface ChapterSelectProps {
   chapters: ChapterMeta[]
   progress: Record<string, { status: ChapterStatus; attemptsLeft: number }>
   sessionId: string
-  onEnterChapter: (chapterId: string, openingLine: string, attemptsLeft: number) => void
+  onEnterChapter: (
+    chapterId: string,
+    openingLine: string,
+    attemptsLeft: number,
+    dialogueNode?: DialogueNode,
+  ) => void
   onSessionExpired: () => void
 }
 
@@ -44,7 +49,7 @@ export function ChapterSelect({
     setPendingId(chapterId)
     try {
       const res = await startChapter(chapterId, sessionId)
-      onEnterChapter(chapterId, res.opening_line, res.attempts_left)
+      onEnterChapter(chapterId, res.opening_line, res.attempts_left, res.dialogue_node)
     } catch (err) {
       const message = String(err)
       if (isSessionExpiredMessage(message)) {
