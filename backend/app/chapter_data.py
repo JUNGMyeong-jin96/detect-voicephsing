@@ -236,7 +236,7 @@ DIALOGUE_TREES: dict[str, dict[str, DialogueNode]] = {
                     "지금 확인 안 하시면 계좌가 바로 동결됩니다. 그리고 이건 수사 기밀이라 가족한테도 알리시면 "
                     "안 됩니다. 시간이 정말 없습니다."
                 ),
-                persona_expression="urgent",
+                persona_expression="secretive",
                 choices=[
                     DialogueChoice(
                         id="comply",

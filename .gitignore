@@ -20,3 +20,6 @@ dist-ssr/
 
 # 로컬 전용 기획 문서 (저장소에는 커밋하지 않음)
 scenarios.md
+
+# 로컬 전용 원본 이미지 자료 (실제 사용 자산은 frontend/src/assets에 크롭되어 있음)
+chapter1/

@@ -91,12 +91,12 @@ export function ScriptedChatScreen({
     }
   }
 
-  const personaExpression = currentNode?.persona_expression ?? 'neutral_official'
+  const personaExpression = currentNode?.persona_expression ?? 'ended'
 
   return (
     <div className="mx-auto flex h-dvh max-w-2xl flex-col px-4 py-6">
       <header className="mb-4 flex items-center gap-3">
-        <PersonaAvatar expression={personaExpression} personaName={chapterMeta.persona_name} />
+        <PersonaAvatar expression={personaExpression} personaName={chapterMeta.persona_name} chapterId={chapterId} />
         <div>
           <p className="text-xs tracking-wide text-slate-400 uppercase">
             Ch{chapterMeta.order}. {chapterMeta.title} · {chapterMeta.fraud_type}
