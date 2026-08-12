@@ -12,6 +12,7 @@ async def create_session():
         "session_id": session.session_id,
         "expires_at": session.expires_at,
         "current_chapter_id": session.current_chapter_id,
+        "chapters": {},
     }
 
 
@@ -24,6 +25,10 @@ async def get_session(session_id: str):
         "session_id": session.session_id,
         "expires_at": session.expires_at,
         "current_chapter_id": session.current_chapter_id,
+        "chapters": {
+            cid: {"status": p.status.value, "attempts_used": p.attempts_used}
+            for cid, p in session.chapters.items()
+        },
     }
 
 

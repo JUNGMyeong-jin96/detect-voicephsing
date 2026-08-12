@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 from collections.abc import AsyncIterator
 
@@ -14,6 +15,8 @@ from app.chapter_data import (
 )
 from app.config import ANTHROPIC_API_KEY, EVALUATOR_MODEL, PERSONA_MODEL
 from app.models import EvaluationResult, Message, MessageRole
+
+logger = logging.getLogger(__name__)
 
 _client = AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
 
@@ -44,6 +47,7 @@ def _extract_json(text: str) -> dict:
         match = re.search(r"\{.*\}", text, re.DOTALL)
         if not match:
             raise
+        logger.warning("Evaluator response was not pure JSON, used regex fallback: %r", text)
         return json.loads(match.group(0))
 
 

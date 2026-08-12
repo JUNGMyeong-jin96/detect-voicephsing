@@ -40,7 +40,7 @@
 
 ## 4. 시스템 아키텍처 개요
 
-- **Frontend:** React 18 + Vite + TypeScript + Tailwind — 챗 UI, SSE 스트리밍 수신, 챕터 진행 상태(로컬스토리지/세션) 관리
+- **Frontend:** React 19 + Vite + TypeScript + Tailwind — 챗 UI, SSE 스트리밍 수신, 챕터 진행 상태(로컬스토리지/세션) 관리
 - **Backend:** FastAPI + Uvicorn + Pydantic
   - `/session` — 게스트 세션 생성
   - `/chapter/{id}/message` — 플레이어 대사 입력 → Persona LLM 응답(SSE 스트리밍)
@@ -59,6 +59,10 @@
 3. Ch3 — 대환대출 상담 전화 (대환대출 빙자형)
 4. Ch4 — 다급한 문자 한 통 (메신저피싱+협박형)
 5. Ch5 — 가족을 지켜라 (목표 반전형 캡스톤)
+
+이후 "가해자 모드(외전)"가 추가되어, 플레이어가 보이스피싱 조직원 입장에서 수법을 실행하는
+목표 반전형 6개 챕터(`atk_intro`, `atk1`~`atk5`)가 별도로 존재한다. 상세 콘텐츠는
+`backend/app/chapter_data.py` 참고.
 
 ## 6. 후속 작업 (본 인터뷰 범위 밖)
 
