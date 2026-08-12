@@ -1,5 +1,6 @@
 export type ChapterStatus = 'locked' | 'in_progress' | 'success' | 'failed_final'
 export type ChapterMode = 'freeform' | 'scripted'
+export type ChapterRole = 'victim' | 'attacker'
 
 export interface ChapterMeta {
   id: string
@@ -10,6 +11,7 @@ export interface ChapterMeta {
   persona_name: string
   max_attempts: number
   mode: ChapterMode
+  role: ChapterRole
 }
 
 export interface DialogueChoice {

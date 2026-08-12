@@ -6,6 +6,7 @@ interface ChapterSelectProps {
   chapters: ChapterMeta[]
   progress: Record<string, { status: ChapterStatus; attemptsLeft: number }>
   sessionId: string
+  onBack: () => void
   onEnterChapter: (
     chapterId: string,
     openingLine: string,
@@ -32,6 +33,7 @@ export function ChapterSelect({
   chapters,
   progress,
   sessionId,
+  onBack,
   onEnterChapter,
   onSessionExpired,
 }: ChapterSelectProps) {
@@ -64,7 +66,10 @@ export function ChapterSelect({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-2xl font-semibold text-slate-100">보이스피싱 대응 훈련 시뮬레이션</h1>
+      <button onClick={onBack} className="text-sm text-slate-400 hover:text-slate-200">
+        ← 모드 선택으로
+      </button>
+      <h1 className="mt-3 text-2xl font-semibold text-slate-100">보이스피싱 대응 훈련 시뮬레이션</h1>
       <p className="mt-1 text-sm text-slate-400">챕터를 선택해 시작하세요.</p>
 
       {errorMessage && <p className="mt-4 text-sm text-red-400">{errorMessage}</p>}

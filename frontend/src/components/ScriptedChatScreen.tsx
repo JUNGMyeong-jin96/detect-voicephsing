@@ -124,7 +124,11 @@ export function ScriptedChatScreen({
           }`}
         >
           <p className="font-medium">
-            {lastEvaluation.success ? '침착하게 잘 대응했습니다' : '아직 대화가 진행 중입니다'}
+            {lastEvaluation.success
+              ? chapterMeta.role === 'attacker'
+                ? '피해자를 성공적으로 설득했습니다'
+                : '침착하게 잘 대응했습니다'
+              : '아직 대화가 진행 중입니다'}
           </p>
           <p className="mt-1 text-xs opacity-80">{lastEvaluation.reason}</p>
         </div>

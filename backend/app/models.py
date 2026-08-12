@@ -26,6 +26,7 @@ class ChapterMeta(BaseModel):
     persona_name: str
     max_attempts: int
     mode: Literal["freeform", "scripted"] = "freeform"
+    role: Literal["victim", "attacker"]
 
 
 class DialogueChoice(BaseModel):

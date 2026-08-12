@@ -6,7 +6,9 @@ from anthropic import AsyncAnthropic
 
 from app.chapter_data import (
     CHAPTER_AI_TAGS,
+    CHAPTERS,
     EVALUATOR_PROMPT_TEMPLATE,
+    EVALUATOR_PROMPT_TEMPLATE_ATTACKER,
     PERSONA_PROMPTS,
     SUCCESS_CRITERIA,
 )
@@ -53,7 +55,9 @@ def _transcript(history: list[Message]) -> str:
 
 
 async def evaluate(chapter_id: str, history: list[Message]) -> EvaluationResult:
-    prompt = EVALUATOR_PROMPT_TEMPLATE.format(
+    role = next(c.role for c in CHAPTERS if c.id == chapter_id)
+    template = EVALUATOR_PROMPT_TEMPLATE_ATTACKER if role == "attacker" else EVALUATOR_PROMPT_TEMPLATE
+    prompt = template.format(
         criteria=SUCCESS_CRITERIA[chapter_id],
         ai_tags=" / ".join(CHAPTER_AI_TAGS[chapter_id]),
         transcript=_transcript(history),

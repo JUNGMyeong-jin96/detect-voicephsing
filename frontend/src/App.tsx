@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
 import { listChapters } from './api/client'
-import type { ChapterMeta, ChapterStatus, DialogueNode } from './api/types'
+import type { ChapterMeta, ChapterRole, ChapterStatus, DialogueNode } from './api/types'
 import { ChapterSelect } from './components/ChapterSelect'
 import { ChatScreen } from './components/ChatScreen'
+import { ModeSelect } from './components/ModeSelect'
 import { ReportScreen } from './components/ReportScreen'
 import { ScriptedChatScreen } from './components/ScriptedChatScreen'
 import { useSession } from './hooks/useSession'
 
 type View =
   | { name: 'loading' }
-  | { name: 'chapter-select' }
+  | { name: 'mode-select' }
+  | { name: 'chapter-select'; role: ChapterRole }
   | { name: 'chat'; chapterId: string; openingLine: string; attemptsLeft: number; dialogueNode?: DialogueNode }
   | { name: 'report'; chapterId: string }
 
@@ -26,14 +28,14 @@ function App() {
     listChapters()
       .then((data) => {
         setChapters(data)
-        setView({ name: 'chapter-select' })
+        setView({ name: 'mode-select' })
       })
       .catch((err) => setLoadError(String(err)))
   }, [])
 
   function handleSessionExpired() {
     setProgress({})
-    setView({ name: 'chapter-select' })
+    setView({ name: 'mode-select' })
     resetSession()
   }
 
@@ -44,11 +46,16 @@ function App() {
 
       {view.name === 'loading' && <p className="p-10 text-sm text-slate-400">불러오는 중...</p>}
 
+      {view.name === 'mode-select' && (
+        <ModeSelect onSelectMode={(role) => setView({ name: 'chapter-select', role })} />
+      )}
+
       {view.name === 'chapter-select' && sessionId && (
         <ChapterSelect
-          chapters={chapters}
+          chapters={chapters.filter((c) => c.role === view.role)}
           progress={progress}
           sessionId={sessionId}
+          onBack={() => setView({ name: 'mode-select' })}
           onEnterChapter={(chapterId, openingLine, attemptsLeft, dialogueNode) =>
             setView({ name: 'chat', chapterId, openingLine, attemptsLeft, dialogueNode })
           }
@@ -95,18 +102,25 @@ function App() {
           )
         })()}
 
-      {view.name === 'report' && sessionId && (
-        <ReportScreen
-          chapterId={view.chapterId}
-          sessionId={sessionId}
-          chapters={chapters}
-          onBackToChapters={() => setView({ name: 'chapter-select' })}
-          onNextChapter={(chapterId, openingLine, attemptsLeft, dialogueNode) =>
-            setView({ name: 'chat', chapterId, openingLine, attemptsLeft, dialogueNode })
-          }
-          onSessionExpired={handleSessionExpired}
-        />
-      )}
+      {view.name === 'report' &&
+        sessionId &&
+        (() => {
+          const chapterMeta = chapters.find((c) => c.id === view.chapterId)
+          if (!chapterMeta) return null
+          return (
+            <ReportScreen
+              chapterId={view.chapterId}
+              role={chapterMeta.role}
+              sessionId={sessionId}
+              chapters={chapters.filter((c) => c.role === chapterMeta.role)}
+              onBackToChapters={() => setView({ name: 'chapter-select', role: chapterMeta.role })}
+              onNextChapter={(chapterId, openingLine, attemptsLeft, dialogueNode) =>
+                setView({ name: 'chat', chapterId, openingLine, attemptsLeft, dialogueNode })
+              }
+              onSessionExpired={handleSessionExpired}
+            />
+          )
+        })()}
     </div>
   )
 }
