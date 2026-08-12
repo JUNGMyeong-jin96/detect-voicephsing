@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -10,6 +11,8 @@ from app.chapter_data import CHAPTER_ORDER_BY_ROLE, CHAPTERS, DIALOGUE_TREES, OP
 from app.models import ChapterMeta, ChapterProgress, ChapterStatus, DialogueNode, Message, MessageRole
 from app.rate_limiter import check_message_rate_limit
 from app.store import store
+
+logger = logging.getLogger(__name__)
 
 MAX_MESSAGE_LENGTH = 350  # frontend/src/components/ChatScreen.tsx의 MAX_MESSAGE_LENGTH와 동기화
 
@@ -136,6 +139,9 @@ async def send_message(chapter_id: str, body: MessageIn):
                 full_text += chunk
                 yield _sse("token", {"chunk": chunk})
         except Exception as exc:
+            logger.error(
+                "persona_llm_error: session=%s chapter=%s", session.session_id, chapter_id, exc_info=True
+            )
             yield _sse("error", {"code": "persona_llm_error", "message": str(exc)})
             return
 
@@ -149,6 +155,9 @@ async def send_message(chapter_id: str, body: MessageIn):
         try:
             result = await llm_client.evaluate(chapter_id, history)
         except Exception as exc:
+            logger.error(
+                "evaluator_llm_error: session=%s chapter=%s", session.session_id, chapter_id, exc_info=True
+            )
             yield _sse("error", {"code": "evaluator_llm_error", "message": str(exc)})
             return
 
@@ -210,6 +219,9 @@ async def send_choice(chapter_id: str, body: ChoiceIn):
     try:
         result = await llm_client.evaluate(chapter_id, history)
     except Exception as exc:
+        logger.error(
+            "evaluator_llm_error: session=%s chapter=%s", session.session_id, chapter_id, exc_info=True
+        )
         raise HTTPException(status_code=502, detail=f"evaluator_llm_error: {exc}")
 
     await store.append_evaluation(session.session_id, chapter_id, result)

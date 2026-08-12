@@ -18,7 +18,7 @@ type View =
 type Progress = Record<string, { status: ChapterStatus; attemptsLeft: number }>
 
 function App() {
-  const { sessionId, error: sessionError, resetSession } = useSession()
+  const { sessionId, initialSession, error: sessionError, resetSession } = useSession()
   const [chapters, setChapters] = useState<ChapterMeta[]>([])
   const [progress, setProgress] = useState<Progress>({})
   const [view, setView] = useState<View>({ name: 'loading' })
@@ -32,6 +32,15 @@ function App() {
       })
       .catch((err) => setLoadError(String(err)))
   }, [])
+
+  useEffect(() => {
+    if (!initialSession) return
+    const hydrated: Progress = {}
+    for (const [chapterId, info] of Object.entries(initialSession.chapters)) {
+      hydrated[chapterId] = { status: info.status, attemptsLeft: 0 }
+    }
+    setProgress(hydrated)
+  }, [initialSession])
 
   function handleSessionExpired() {
     setProgress({})

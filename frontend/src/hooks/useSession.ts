@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useState } from 'react'
 import { createSession, getSession } from '../api/client'
+import type { SessionInfo } from '../api/types'
 
 const STORAGE_KEY = 'vp-trainer-session-id'
 
 export function useSession() {
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [initialSession, setInitialSession] = useState<SessionInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const startNewSession = useCallback(() => {
     return createSession()
       .then((session) => {
         localStorage.setItem(STORAGE_KEY, session.session_id)
+        setInitialSession(session)
         setSessionId(session.session_id)
         setError(null)
       })
@@ -21,7 +24,10 @@ export function useSession() {
     const existing = localStorage.getItem(STORAGE_KEY)
     if (existing) {
       getSession(existing)
-        .then(() => setSessionId(existing))
+        .then((session) => {
+          setInitialSession(session)
+          setSessionId(existing)
+        })
         .catch(() => startNewSession())
       return
     }
@@ -34,5 +40,5 @@ export function useSession() {
     void startNewSession()
   }, [startNewSession])
 
-  return { sessionId, error, resetSession }
+  return { sessionId, initialSession, error, resetSession }
 }

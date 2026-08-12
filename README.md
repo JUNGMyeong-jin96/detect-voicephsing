@@ -1,8 +1,10 @@
 # 보이스피싱 역할극 시뮬레이션 게임
 
-보이스피싱 피해를 예방하기 위해, 플레이어가 잠재적 피해자가 되어 AI가 재현하는 실제 보이스피싱 수법을 마주하고 이를 알아채고 올바르게 대응(거절·검증·통화종료)하도록 훈련시키는 웹 기반 서사형 시뮬레이션 게임입니다. LLM이 "보이스피싱범" 페르소나로 대사를 직접 입력하며 플레이어를 설득하려 시도하고, 플레이어는 이를 방어해야 합니다.
+보이스피싱 피해를 예방하기 위해, 플레이어가 잠재적 피해자가 되어 AI가 재현하는 실제 보이스피싱 수법을 마주하고 이를 알아채고 올바르게 대응(거절·검증·통화종료)하도록 훈련시키는 웹 기반 서사형 시뮬레이션 게임입니다. 시작 시 모드를 선택합니다: **피해자 모드**(보이스피싱을 당하는 입장에서 방어)와 **가해자 모드(외전)**(보이스피싱 조직원의 시점에서 수법을 역으로 체험). 각 턴마다 Evaluator LLM이 플레이어의 대응/선택을 실시간으로 판정합니다.
 
 ## 챕터 구성
+
+### 피해자 모드
 
 1. Ch1 — 수상한 전화 (기관사칭형)
 2. Ch2 — 투자 리딩방 스캠
@@ -10,21 +12,25 @@
 4. Ch4 — 다급한 문자 한 통 (메신저피싱+협박형)
 5. Ch5 — 가족을 지켜라 (목표 반전형 캡스톤)
 
+### 가해자 모드 (외전)
+
+인트로 챕터 포함 총 6개 챕터로, `backend/app/chapter_data.py`에 정의되어 있습니다.
+
 챕터 성공/실패와 무관하게 종료 시 실제 보이스피싱 예방 수칙 기반의 개인 맞춤 피드백 리포트를 제공합니다.
 
 ## 기술 스택
 
 - **Backend:** Python 3.11+, FastAPI, Uvicorn, Pydantic, Anthropic SDK
-- **Frontend:** React 18, Vite, TypeScript, Tailwind CSS
+- **Frontend:** React 19, Vite, TypeScript, Tailwind CSS
 - **통신:** RESTful API (JSON) + SSE 스트리밍
-- **상태 저장:** 인메모리 세션(TTL 24h), 인증 없는 게스트 세션
+- **상태 저장:** Postgres(Supabase) 기반 게스트 세션(TTL 24h), 인증 없음
 
 자세한 설계는 [design-spec.md](design-spec.md), API 스펙은 [api-spec.md](api-spec.md)를 참고하세요.
 
 ## 프로젝트 구조
 
 ```
-backend/    FastAPI 서버 (routers/, services/, models 등)
+backend/    FastAPI 서버 (routers/ + app/ 평면 구조: chapter_data.py, llm_client.py, store.py 등)
 frontend/   React + Vite + TypeScript 클라이언트
 ```
 
@@ -51,6 +57,19 @@ npm run dev
 ```
 
 기본적으로 backend는 `http://localhost:8000`, frontend는 `http://localhost:5173`에서 동작합니다.
+
+## 테스트
+
+```bash
+# Backend (pytest)
+cd backend
+pip install -r requirements-dev.txt
+pytest
+
+# Frontend (vitest)
+cd frontend
+npm run test
+```
 
 ## 환경 변수
 

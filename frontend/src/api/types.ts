@@ -30,6 +30,7 @@ export interface SessionInfo {
   session_id: string
   expires_at: string
   current_chapter_id: string
+  chapters: Record<string, { status: ChapterStatus; attempts_used: number }>
 }
 
 export interface StartChapterResponse {
