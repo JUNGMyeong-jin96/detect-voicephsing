@@ -6,7 +6,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from app import llm_client
-from app.chapter_data import CHAPTER_ORDER, CHAPTERS, DIALOGUE_TREES, OPENING_LINES, TIPS_MAP
+from app.chapter_data import CHAPTER_ORDER_BY_ROLE, CHAPTERS, DIALOGUE_TREES, OPENING_LINES, TIPS_MAP
 from app.models import ChapterMeta, ChapterProgress, ChapterStatus, DialogueNode, Message, MessageRole
 from app.rate_limiter import check_message_rate_limit
 from app.store import store
@@ -68,9 +68,10 @@ async def start_chapter(chapter_id: str, body: SessionRef):
     session = await _get_session(body.session_id)
     meta = _chapter_meta(chapter_id)
 
-    idx = CHAPTER_ORDER.index(chapter_id)
+    order = CHAPTER_ORDER_BY_ROLE[meta.role]
+    idx = order.index(chapter_id)
     if idx > 0:
-        prev_progress = store.get_progress(session, CHAPTER_ORDER[idx - 1])
+        prev_progress = store.get_progress(session, order[idx - 1])
         if prev_progress.status != ChapterStatus.SUCCESS:
             raise HTTPException(status_code=409, detail="previous chapter not completed")
 

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { getReport, isSessionExpiredMessage, startChapter } from '../api/client'
-import type { ChapterMeta, ChapterReport, DialogueNode } from '../api/types'
+import type { ChapterMeta, ChapterReport, ChapterRole, DialogueNode } from '../api/types'
 
 interface ReportScreenProps {
   chapterId: string
+  role: ChapterRole
   sessionId: string
   chapters: ChapterMeta[]
   onBackToChapters: () => void
@@ -18,6 +19,7 @@ interface ReportScreenProps {
 
 export function ReportScreen({
   chapterId,
+  role,
   sessionId,
   chapters,
   onBackToChapters,
@@ -71,15 +73,21 @@ export function ReportScreen({
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="text-xl font-semibold text-slate-100">
-        {report.outcome === 'success'
-          ? '챕터 클리어 — 사기를 막아냈습니다!'
-          : '챕터 종료 — 사기에 넘어갔습니다. 다시 도전해보세요.'}
+        {role === 'attacker'
+          ? report.outcome === 'success'
+            ? '챕터 클리어 — 피해자를 성공적으로 속였습니다.'
+            : '챕터 종료 — 피해자가 눈치채고 넘어가지 않았습니다. 다시 도전해보세요.'
+          : report.outcome === 'success'
+            ? '챕터 클리어 — 사기를 막아냈습니다!'
+            : '챕터 종료 — 사기에 넘어갔습니다. 다시 도전해보세요.'}
       </h1>
 
       <section className="mt-6">
         <h2 className="text-sm font-medium text-slate-300">이번 챕터에서 확인된 신호</h2>
         <p className="mt-1 text-xs text-slate-500">
-          AI가 사용한 사기 수법과, 당신의 대응 중 주의가 필요했던 부분입니다.
+          {role === 'attacker'
+            ? '당신이 사용한 조작 기법과, 그로 인해 피해자가 흔들렸던 지점입니다.'
+            : 'AI가 사용한 사기 수법과, 당신의 대응 중 주의가 필요했던 부분입니다.'}
         </p>
         {report.matched_patterns_summary.length === 0 ? (
           <p className="mt-2 text-sm text-slate-500">감지된 패턴이 없습니다.</p>
